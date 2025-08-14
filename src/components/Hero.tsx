@@ -56,38 +56,42 @@ const Hero = () => {
     <section id="hero" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
       {/* Galaxy Background */}
       <div className="absolute inset-0 w-full h-full">
-        <Galaxy
-          mouseRepulsion={false}
-          mouseInteraction={false}
-          density={0.8}
-          glowIntensity={0.2}
-          saturation={0.1}
-          hueShift={200}
-          speed={0.8}
-          twinkleIntensity={0.2}
-          rotationSpeed={0.05}
-          repulsionStrength={0}
-          transparent={true}
-          autoCenterRepulsion={0}
-        />
+        <div className="w-full h-full">
+          <Galaxy
+            mouseRepulsion={false}
+            mouseInteraction={false}
+            density={0.8}
+            glowIntensity={0.2}
+            saturation={0.1}
+            hueShift={200}
+            speed={0.8}
+            twinkleIntensity={0.2}
+            rotationSpeed={0.05}
+            repulsionStrength={0}
+            transparent={true}
+            autoCenterRepulsion={0}
+          />
+        </div>
       </div>
 
       {/* Light Rays */}
       <div className="absolute inset-0 w-full h-full hero-light-rays">
-        <LightRays
-          raysOrigin="top-center"
-          raysColor="#ffffff"
-          raysSpeed={0.8}
-          lightSpread={2.0}
-          rayLength={1.8}
-          pulsating={true}
-          fadeDistance={0.8}
-          saturation={0.6}
-          followMouse={false}
-          mouseInfluence={0.0}
-          noiseAmount={0.05}
-          distortion={0.1}
-        />
+        <div className="w-full h-full">
+          <LightRays
+            raysOrigin="top-center"
+            raysColor="#ffffff"
+            raysSpeed={0.8}
+            lightSpread={2.0}
+            rayLength={1.8}
+            pulsating={true}
+            fadeDistance={0.8}
+            saturation={0.6}
+            followMouse={false}
+            mouseInfluence={0.0}
+            noiseAmount={0.05}
+            distortion={0.1}
+          />
+        </div>
       </div>
 
       {/* Animated background grid */}

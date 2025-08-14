@@ -129,20 +129,38 @@ const LightRays: React.FC<LightRaysProps> = ({
 
       if (!containerRef.current) return;
 
-      const renderer = new Renderer({
-        dpr: Math.min(window.devicePixelRatio, 2),
-        alpha: true,
-      });
-      rendererRef.current = renderer;
+      let renderer: Renderer;
+      let gl: WebGLRenderingContext | WebGL2RenderingContext;
+      
+      try {
+        renderer = new Renderer({
+          dpr: Math.min(window.devicePixelRatio, 2),
+          alpha: true,
+        });
+        rendererRef.current = renderer;
+        gl = renderer.gl;
+        
+        if (!gl) {
+          console.warn('WebGL context not available, LightRays component will not render');
+          return;
+        }
+      } catch (error) {
+        console.warn('Failed to create WebGL context for LightRays component:', error);
+        return;
+      }
 
-      const gl = renderer.gl;
       gl.canvas.style.width = "100%";
       gl.canvas.style.height = "100%";
 
-      while (containerRef.current.firstChild) {
-        containerRef.current.removeChild(containerRef.current.firstChild);
+      try {
+        while (containerRef.current.firstChild) {
+          containerRef.current.removeChild(containerRef.current.firstChild);
+        }
+        containerRef.current.appendChild(gl.canvas);
+      } catch (error) {
+        console.warn('Failed to append canvas to LightRays container:', error);
+        return;
       }
-      containerRef.current.appendChild(gl.canvas);
 
       const vert = `
 attribute vec2 position;
@@ -268,21 +286,33 @@ void main() {
       uniformsRef.current = uniforms;
 
       const geometry = new Triangle(gl);
-      const program = new Program(gl, {
-        vertex: vert,
-        fragment: frag,
-        uniforms,
-      });
-      const mesh = new Mesh(gl, { geometry, program });
-      meshRef.current = mesh;
+      
+      try {
+        const program = new Program(gl, {
+          vertex: vert,
+          fragment: frag,
+          uniforms,
+        });
+        const mesh = new Mesh(gl, { geometry, program });
+        meshRef.current = mesh;
+      } catch (error) {
+        console.warn('Failed to create WebGL program for LightRays component:', error);
+        return;
+      }
 
       const updatePlacement = () => {
-        if (!containerRef.current || !renderer) return;
+        if (!containerRef.current || !renderer || !gl) return;
 
         renderer.dpr = Math.min(window.devicePixelRatio, 2);
 
         const { clientWidth: wCSS, clientHeight: hCSS } = containerRef.current;
-        renderer.setSize(wCSS, hCSS);
+        
+        try {
+          renderer.setSize(wCSS, hCSS);
+        } catch (error) {
+          console.warn('Failed to resize LightRays component:', error);
+          return;
+        }
 
         const dpr = renderer.dpr;
         const w = wCSS * dpr;
@@ -328,8 +358,14 @@ void main() {
       };
 
       window.addEventListener("resize", updatePlacement);
-      updatePlacement();
-      animationIdRef.current = requestAnimationFrame(loop);
+      
+      try {
+        updatePlacement();
+        animationIdRef.current = requestAnimationFrame(loop);
+      } catch (error) {
+        console.warn('Failed to start LightRays component:', error);
+        return;
+      }
 
       cleanupFunctionRef.current = () => {
         if (animationIdRef.current) {
@@ -362,7 +398,11 @@ void main() {
       };
     };
 
-    initializeWebGL();
+    try {
+      initializeWebGL();
+    } catch (error) {
+      console.warn('Failed to initialize LightRays WebGL:', error);
+    }
 
     return () => {
       if (cleanupFunctionRef.current) {

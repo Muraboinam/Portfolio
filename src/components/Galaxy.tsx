@@ -217,11 +217,25 @@ export default function Galaxy({
   useEffect(() => {
     if (!ctnDom.current) return;
     const ctn = ctnDom.current;
-    const renderer = new Renderer({
-      alpha: transparent,
-      premultipliedAlpha: false,
-    });
-    const gl = renderer.gl;
+    
+    let renderer: Renderer;
+    let gl: WebGLRenderingContext | WebGL2RenderingContext;
+    
+    try {
+      renderer = new Renderer({
+        alpha: transparent,
+        premultipliedAlpha: false,
+      });
+      gl = renderer.gl;
+      
+      if (!gl) {
+        console.warn('WebGL context not available, Galaxy component will not render');
+        return;
+      }
+    } catch (error) {
+      console.warn('Failed to create WebGL context for Galaxy component:', error);
+      return;
+    }
 
     if (transparent) {
       gl.enable(gl.BLEND);
@@ -245,50 +259,65 @@ export default function Galaxy({
       }
     }
     window.addEventListener("resize", resize, false);
-    resize();
+    
+    try {
+      resize();
+    } catch (error) {
+      console.warn('Failed to resize Galaxy component:', error);
+      return;
+    }
 
     const geometry = new Triangle(gl);
-    program = new Program(gl, {
-      vertex: vertexShader,
-      fragment: fragmentShader,
-      uniforms: {
-        uTime: { value: 0 },
-        uResolution: {
-          value: new Color(
-            gl.canvas.width,
-            gl.canvas.height,
-            gl.canvas.width / gl.canvas.height
-          ),
+    
+    try {
+      program = new Program(gl, {
+        vertex: vertexShader,
+        fragment: fragmentShader,
+        uniforms: {
+          uTime: { value: 0 },
+          uResolution: {
+            value: new Color(
+              gl.canvas.width,
+              gl.canvas.height,
+              gl.canvas.width / gl.canvas.height
+            ),
+          },
+          uFocal: { value: new Float32Array(focal) },
+          uRotation: { value: new Float32Array(rotation) },
+          uStarSpeed: { value: starSpeed },
+          uDensity: { value: density },
+          uHueShift: { value: hueShift },
+          uSpeed: { value: speed },
+          uMouse: {
+            value: new Float32Array([
+              smoothMousePos.current.x,
+              smoothMousePos.current.y,
+            ]),
+          },
+          uGlowIntensity: { value: glowIntensity },
+          uSaturation: { value: saturation },
+          uMouseRepulsion: { value: mouseRepulsion },
+          uTwinkleIntensity: { value: twinkleIntensity },
+          uRotationSpeed: { value: rotationSpeed },
+          uRepulsionStrength: { value: repulsionStrength },
+          uMouseActiveFactor: { value: 0.0 },
+          uAutoCenterRepulsion: { value: autoCenterRepulsion },
+          uTransparent: { value: transparent },
         },
-        uFocal: { value: new Float32Array(focal) },
-        uRotation: { value: new Float32Array(rotation) },
-        uStarSpeed: { value: starSpeed },
-        uDensity: { value: density },
-        uHueShift: { value: hueShift },
-        uSpeed: { value: speed },
-        uMouse: {
-          value: new Float32Array([
-            smoothMousePos.current.x,
-            smoothMousePos.current.y,
-          ]),
-        },
-        uGlowIntensity: { value: glowIntensity },
-        uSaturation: { value: saturation },
-        uMouseRepulsion: { value: mouseRepulsion },
-        uTwinkleIntensity: { value: twinkleIntensity },
-        uRotationSpeed: { value: rotationSpeed },
-        uRepulsionStrength: { value: repulsionStrength },
-        uMouseActiveFactor: { value: 0.0 },
-        uAutoCenterRepulsion: { value: autoCenterRepulsion },
-        uTransparent: { value: transparent },
-      },
-    });
+      });
+    } catch (error) {
+      console.warn('Failed to create WebGL program for Galaxy component:', error);
+      return;
+    }
 
     const mesh = new Mesh(gl, { geometry, program });
     let animateId: number;
 
     function update(t: number) {
-      animateId = requestAnimationFrame(update);
+      if (!renderer || !program || !mesh) {
+        return;
+      }
+      
       if (!disableAnimation) {
         program.uniforms.uTime.value = t * 0.001;
         program.uniforms.uStarSpeed.value = (t * 0.001 * starSpeed) / 10.0;
@@ -307,10 +336,22 @@ export default function Galaxy({
       program.uniforms.uMouse.value[1] = smoothMousePos.current.y;
       program.uniforms.uMouseActiveFactor.value = smoothMouseActive.current;
 
-      renderer.render({ scene: mesh });
+      try {
+        renderer.render({ scene: mesh });
+        animateId = requestAnimationFrame(update);
+      } catch (error) {
+        console.warn('WebGL rendering error in Galaxy component:', error);
+        return;
+      }
     }
-    animateId = requestAnimationFrame(update);
-    ctn.appendChild(gl.canvas);
+    
+    try {
+      animateId = requestAnimationFrame(update);
+      ctn.appendChild(gl.canvas);
+    } catch (error) {
+      console.warn('Failed to start Galaxy component animation:', error);
+      return;
+    }
 
     function handleMouseMove(e: MouseEvent) {
       const rect = ctn.getBoundingClientRect();
@@ -336,8 +377,15 @@ export default function Galaxy({
         ctn.removeEventListener("mousemove", handleMouseMove);
         ctn.removeEventListener("mouseleave", handleMouseLeave);
       }
-      ctn.removeChild(gl.canvas);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      
+      try {
+        if (gl && gl.canvas && gl.canvas.parentNode) {
+          ctn.removeChild(gl.canvas);
+        }
+        gl?.getExtension("WEBGL_lose_context")?.loseContext();
+      } catch (error) {
+        console.warn('Error during Galaxy component cleanup:', error);
+      }
     };
   }, [
     focal,
