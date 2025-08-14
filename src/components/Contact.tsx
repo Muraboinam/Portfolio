@@ -87,8 +87,8 @@ const Contact = () => {
     {
       icon: Mail,
       title: 'Email',
-      value: 'hello@portfolio.com',
-      link: 'mailto:hello@portfolio.com',
+      value: 'layzomarket@gmail.com',
+      link: 'mailto:layzomarket@gmail.com',
       gradient: 'from-cyan-500 to-blue-600'
     }
   ];

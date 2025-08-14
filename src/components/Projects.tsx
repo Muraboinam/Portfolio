@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ExternalLink, Github, Globe, Smartphone, Bot, Shield, Cpu, Zap } from 'lucide-react';
+import { Globe, Smartphone, Bot, Shield, Cpu, Zap } from 'lucide-react';
 import { useScrollReveal } from '../hooks/useScrollReveal';
 
 const Projects = () => {
@@ -166,24 +166,6 @@ const Projects = () => {
                     className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110 filter brightness-75 group-hover:brightness-100"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent"></div>
-                  
-                  {/* Hover overlay with links */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-end justify-center pb-4">
-                    <div className="flex space-x-3">
-                      <a 
-                        href={project.liveUrl}
-                        className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center hover:shadow-lg hover:shadow-cyan-500/25 transition-all duration-300"
-                      >
-                        <ExternalLink className="w-5 h-5 text-white" />
-                      </a>
-                      <a 
-                        href={project.githubUrl}
-                        className="w-12 h-12 bg-gradient-to-r from-gray-700 to-gray-800 rounded-lg flex items-center justify-center hover:shadow-lg hover:shadow-gray-500/25 transition-all duration-300"
-                      >
-                        <Github className="w-5 h-5 text-white" />
-                      </a>
-                    </div>
-                  </div>
                 </div>
                 
                 <div className="p-6">
